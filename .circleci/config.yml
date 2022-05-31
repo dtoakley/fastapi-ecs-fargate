@@ -30,6 +30,8 @@ jobs:
     docker:
         - image: cimg/python:3.10.4
     steps:
+      - setup_remote_docker:
+          version: 20.10.12
       - aws-ecr/build-and-push-image:
           create-repo: true
           repo: $AWS_RESOURCE_NAME_PREFIX-registry
