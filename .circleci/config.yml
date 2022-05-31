@@ -34,8 +34,9 @@ jobs:
           create-repo: true
           repo: $AWS_RESOURCE_NAME_PREFIX-registry
           tag: $CIRCLE_SHA1
+          region: us-east-1
 workflows:
-  deploy:
+  build-and-deploy:
     jobs:
       - build-and-push-image:
           context:
