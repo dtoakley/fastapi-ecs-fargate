@@ -1,0 +1,45 @@
+version: 2.1
+
+orbs:
+  slack: circleci/slack@4.10.1
+  aws-ecr: circleci/aws-ecr@8.1.2
+  sam: circleci/aws-sam-serverless@3.2.0
+
+commands:
+  notify_slack_pass:
+    steps:
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+  notify_slack_error:
+    steps:
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+  deploy:
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/fastapi-ecs-fargate
+      - sam/install
+      - notify_slack_error
+      - notify_slack_pass
+jobs:
+  build-and-push-image:
+    working_directory: ~/fastapi-ecs-fargate
+    docker:
+        - image: cimg/python:3.10.4
+    steps:
+      - aws-ecr/build_and_push_image:
+          create-repo: true
+          repo: $AWS_RESOURCE_NAME_PREFIX-registry
+          tag: $CIRCLE_SHA1
+workflows:
+  deploy:
+    jobs:
+      - build-and-push-image:
+          context:
+            - fastapi-ecs-fargate-context
+          filters:
+            branches:
+              only: [ main ]
