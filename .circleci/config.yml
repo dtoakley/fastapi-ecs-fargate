@@ -18,30 +18,6 @@ commands:
           event: fail
           template: basic_fail_1
 jobs:
-  tf-validate:
-    working_directory: ~/fastapi-ecs-fargate
-    docker:
-        - image: cimg/python:3.10.4
-    steps:
-      - checkout
-      - terraform/validate:
-          path: terraform
-  tf-plan:
-    working_directory: ~/fastapi-ecs-fargate
-    docker:
-      - image: cimg/python:3.10.4
-    steps:
-      - checkout
-      - terraform/plan:
-          path: terraform
-  tf-apply:
-    working_directory: ~/fastapi-ecs-fargate
-    docker:
-      - image: cimg/python:3.10.4
-    steps:
-      - checkout
-      - terraform/apply:
-          path: terraform
   build-and-push-image:
     working_directory: ~/fastapi-ecs-fargate
     docker:
@@ -58,27 +34,34 @@ jobs:
 workflows:
   build-and-deploy:
     jobs:
-      - tf-validate:
-          context:
-            - fastapi-ecs-fargate-context
+      - terraform/fmt:
+          checkout: true
+          context: terraform
           filters:
             branches:
               only: [ main ]
-      - tf-plan:
-          context:
-            - fastapi-ecs-fargate-context
+      - terraform/validate:
+          checkout: true
+          context: terraform
+          filters:
+            branches:
+              only: [ main ]
+      - terraform/plan:
+          checkout: true
+          context: terraform
+          persist-workspace: true
           filters:
             branches:
               only: [ main ]
           requires:
-            - tf-validate
+            - terraform/validate
       - hold-tf-apply:
           type: approval
           requires:
-            - tf-plan
-      - tf-apply:
-          context:
-            - fastapi-ecs-fargate-context
+            - terraform/plan
+      - terraform/apply:
+          attach-workspace: true
+          context: terraform
           filters:
             branches:
               only: [ main ]
@@ -91,7 +74,7 @@ workflows:
             branches:
               only: [ main ]
           requires:
-            - tf-apply
+            - terraform/apply
       - aws-ecs/deploy-service-update:
           cluster-name: $AWS_RESOURCE_NAME_PREFIX-cluster
           container-image-name-updates: container=$AWS_RESOURCE_NAME_PREFIX-service,tag=${CIRCLE_SHA1}
