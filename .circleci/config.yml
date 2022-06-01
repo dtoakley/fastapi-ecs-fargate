@@ -36,11 +36,13 @@ workflows:
     jobs:
       - terraform/fmt:
           checkout: true
+          path: terraform
           filters:
             branches:
               only: [ main ]
       - terraform/validate:
           checkout: true
+          path: terraform
           filters:
             branches:
               only: [ main ]
@@ -48,6 +50,7 @@ workflows:
             - terraform/fmt
       - terraform/plan:
           checkout: true
+          path: terraform
           persist-workspace: true
           filters:
             branches:
@@ -59,6 +62,7 @@ workflows:
           requires:
             - terraform/plan
       - terraform/apply:
+          path: terraform
           attach-workspace: true
           filters:
             branches:
