@@ -4,7 +4,7 @@
 
 - Homebrew - install [here](https://brew.sh/)
 - Python >= 3.10.x - recommend using [pyenv](https://github.com/pyenv/pyenv) or [pipenv](https://github.com/pypa/pipenv) to manage local Python versions
-- Terraform >= 1.2.1 - recommend using [tfenv](https://github.com/tfutils/tfenv) to manage local terraform versions
+- Terraform >= 1.0.0 - recommend using [tfenv](https://github.com/tfutils/tfenv) to manage local terraform versions
 - Colima for container runtimes on macOS - install [here](https://github.com/abiosoft/colima)
 
 # Installation
