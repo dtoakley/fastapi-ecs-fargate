@@ -39,4 +39,4 @@ $ docker run -d --name fastapi-container -p 80:80 fastapi-eca-fargate
 TODO:
 - DynamoDB for state locking 
 - Assume role for executing Terraform
-- Policy for role 
+- Policy for assumed role 

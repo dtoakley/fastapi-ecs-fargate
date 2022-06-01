@@ -3,7 +3,8 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.10.1
   aws-ecr: circleci/aws-ecr@8.1.2
-  sam: circleci/aws-sam-serverless@3.2.0
+  aws-ecs: circleci/aws-ecs@2.2.1
+  terraform: circleci/terraform@3.1.0
 
 commands:
   notify_slack_pass:
@@ -16,15 +17,31 @@ commands:
       - slack/notify:
           event: fail
           template: basic_fail_1
-  deploy:
+jobs:
+  tf-validate:
+    working_directory: ~/fastapi-ecs-fargate
+    docker:
+        - image: cimg/python:3.10.4
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/fastapi-ecs-fargate
-      - sam/install
-      - notify_slack_error
-      - notify_slack_pass
-jobs:
+      - terraform/validate:
+          path: terraform
+  tf-plan:
+    working_directory: ~/fastapi-ecs-fargate
+    docker:
+      - image: cimg/python:3.10.4
+    steps:
+      - checkout
+      - terraform/plan:
+          path: terraform
+  tf-apply:
+    working_directory: ~/fastapi-ecs-fargate
+    docker:
+      - image: cimg/python:3.10.4
+    steps:
+      - checkout
+      - terraform/apply:
+          path: terraform
   build-and-push-image:
     working_directory: ~/fastapi-ecs-fargate
     docker:
@@ -35,14 +52,54 @@ jobs:
       - aws-ecr/build-and-push-image:
           create-repo: true
           repo: $AWS_RESOURCE_NAME_PREFIX-registry
-          tag: $CIRCLE_SHA1
+          tag: latest,$CIRCLE_SHA1
           region: us-east-1
+
 workflows:
   build-and-deploy:
     jobs:
+      - tf-validate:
+          context:
+            - fastapi-ecs-fargate-context
+          filters:
+            branches:
+              only: [ main ]
+      - tf-plan:
+          context:
+            - fastapi-ecs-fargate-context
+          filters:
+            branches:
+              only: [ main ]
+          requires:
+            - tf-validate
+      - hold-tf-apply:
+          type: approval
+          requires:
+            - tf-plan
+      - tf-apply:
+          context:
+            - fastapi-ecs-fargate-context
+          filters:
+            branches:
+              only: [ main ]
+          requires:
+            - hold-tf-apply
       - build-and-push-image:
           context:
             - fastapi-ecs-fargate-context
           filters:
             branches:
               only: [ main ]
+          requires:
+            - tf-apply
+      - aws-ecs/deploy-service-update:
+          cluster-name: $AWS_RESOURCE_NAME_PREFIX-cluster
+          container-image-name-updates: container=$AWS_RESOURCE_NAME_PREFIX-service,tag=${CIRCLE_SHA1}
+          family: $AWS_RESOURCE_NAME_PREFIX-service
+          context:
+            - fastapi-ecs-fargate-context
+          filters:
+            branches:
+              only: [ main ]
+          requires:
+            - build-and-push-image

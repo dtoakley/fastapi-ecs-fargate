@@ -4,6 +4,6 @@ variable "default_region" {
 }
 
 variable "aws_resource_prefix" {
-  type = string
+  type    = string
   default = "fastapi-ecs-fargate"
 }
