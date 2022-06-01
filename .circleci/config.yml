@@ -48,6 +48,8 @@ workflows:
               only: [ main ]
           requires:
             - terraform/fmt
+          context:
+            - fastapi-ecs-fargate-context
       - terraform/plan:
           checkout: true
           path: terraform
@@ -57,6 +59,8 @@ workflows:
               only: [ main ]
           requires:
             - terraform/validate
+          context:
+            - fastapi-ecs-fargate-context
       - hold-tf-apply:
           type: approval
           requires:
@@ -69,6 +73,8 @@ workflows:
               only: [ main ]
           requires:
             - hold-tf-apply
+          context:
+            - fastapi-ecs-fargate-context
       - build-and-push-image:
           context:
             - fastapi-ecs-fargate-context
