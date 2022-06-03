@@ -92,13 +92,13 @@ variable "lb_http_ports" {
   }
 }
 
-#variable "lb_https_ports" {
-#  description = "Map containing objects with two fields, listener_port and the target_group_port to redirect HTTPS requests"
-#  type        = map(any)
-#  default = {
-#    default_http = {
-#      listener_port     = 443
-#      target_group_port = 80
-#    }
-#  }
-#}
+variable "lb_https_ports" {
+  description = "Map containing objects with two fields, listener_port and the target_group_port to redirect HTTPS requests"
+  type        = map(any)
+  default = {
+    default_http = {
+      listener_port     = 443
+      target_group_port = 80
+    }
+  }
+}

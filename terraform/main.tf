@@ -14,8 +14,8 @@ resource "aws_ecr_repository" "fastapi-ecs-fargate-registry" {
 }
 
 resource "aws_acm_certificate" "fastapi-ecs-fargate-ssl-cert" {
-  domain_name       = "local"
-  validation_method = "DNS"
+  domain_name       = "danlewistoakley.com"
+  validation_method = "EMAIL"
 
   lifecycle {
     create_before_destroy = true
@@ -48,6 +48,7 @@ module "ecs-fargate" {
   desired_count                                  = var.service_desired_count
   port_mappings                                  = var.port_mappings
   lb_http_ports                                  = var.lb_http_ports
+  lb_https_ports                                 = var.lb_https_ports
   default_certificate_arn                        = aws_acm_certificate.fastapi-ecs-fargate-ssl-cert.arn
   ssl_policy                                     = "ELBSecurityPolicy-2016-08"
 }
