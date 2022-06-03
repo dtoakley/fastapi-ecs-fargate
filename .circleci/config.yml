@@ -18,18 +18,26 @@ commands:
           event: fail
           template: basic_fail_1
 jobs:
+  create_tf_backend_bucket:
+    executor: aws-cli/default
+    steps:
+      - aws-cli/setup
+      - run: >-
+          aws s3api create-bucket
+          --bucket fastapi-ecs-fargate
+          --region $AWS_DEFAULT_REGION
+          --acl private
   build-and-push-image:
-    working_directory: ~/fastapi-ecs-fargate
+    working_directory: ~/davinci
     docker:
-        - image: cimg/python:3.10.4
+      - image: cimg/python:3.10.4
     steps:
       - setup_remote_docker:
           version: 20.10.12
       - aws-ecr/build-and-push-image:
-          create-repo: true
-          repo: $AWS_RESOURCE_NAME_PREFIX-registry
-          tag: latest,$CIRCLE_SHA1
-          region: us-east-1
+          repo: "${TF_VAR_AWS_RESOURCE_NAME_PREFIX}-registry"
+          region: ${AWS_DEFAULT_REGION}
+          tag: "${CIRCLE_SHA1}" # TO-DO: check how to add latest
 
 workflows:
   build-and-deploy:
@@ -84,9 +92,10 @@ workflows:
           requires:
             - terraform/apply
       - aws-ecs/deploy-service-update:
-          cluster-name: $AWS_RESOURCE_NAME_PREFIX-cluster
-          container-image-name-updates: container=$AWS_RESOURCE_NAME_PREFIX-service,tag=${CIRCLE_SHA1}
-          family: $AWS_RESOURCE_NAME_PREFIX-service
+          cluster-name: "${TF_VAR_AWS_RESOURCE_NAME_PREFIX}" # The short name or full ARN of the cluster that hosts the service.
+          container-image-name-updates: "container=${TF_VAR_AWS_RESOURCE_NAME_PREFIX}-container,tag=${CIRCLE_SHA1}"
+          family: "${TF_VAR_AWS_RESOURCE_NAME_PREFIX}-td" # Name of the task definition's family.
+          service-name: "${TF_VAR_AWS_RESOURCE_NAME_PREFIX}-service"
           context:
             - fastapi-ecs-fargate-context
           filters:
