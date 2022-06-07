@@ -99,6 +99,7 @@ variable "lb_https_ports" {
     default_http = {
       listener_port     = 443
       target_group_port = 80
+      target_group_protocol = "HTTP"
     }
   }
 }
