@@ -97,8 +97,8 @@ variable "lb_https_ports" {
   type        = map(any)
   default = {
     default_http = {
-      listener_port     = 443
-      target_group_port = 80
+      listener_port         = 443
+      target_group_port     = 80
       target_group_protocol = "HTTP"
     }
   }
