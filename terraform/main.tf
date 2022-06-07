@@ -22,6 +22,18 @@ resource "aws_acm_certificate" "fastapi-ecs-fargate-ssl-cert" {
   }
 }
 
+resource "aws_dynamodb_table" "dynamodb-terraform-state-lock" {
+  name = "terraform-state-lock-dynamodb"
+  hash_key = "LockID"
+  read_capacity = 20
+  write_capacity = 20
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+
 module "base-network" {
   source                                      = "cn-terraform/networking/aws"
   version                                     = "2.0.7"
