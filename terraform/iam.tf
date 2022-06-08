@@ -4,7 +4,7 @@ resource "aws_iam_user" "fastapi-terraform" {
 
 
 resource "aws_iam_user_policy" "fastapi-terraform-policy" {
-  name        = "terraform_policy"
+  name = "terraform_policy"
   user = aws_iam_user.fastapi-terraform.name
 
   policy = jsonencode({
