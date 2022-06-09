@@ -34,15 +34,12 @@ resource "aws_iam_user_policy" "fastapi-terraform-policy" {
           "s3:Put*",
           "s3:CreateBucket",
           "s3:HeadBucket",
-          "s3:DeleteBucket",
-          "s3:DeleteObject",
           "dynamodb:Describe*",
           "dynamodb:GetItem",
           "dynamodb:CreateTable",
           "dynamodb:ListTagsOfResource",
           "dynamodb:PutItem",
           "dynamodb:TagResource",
-          "dynamodb:DeleteItem",
           "ecs:Describe*",
           "ecs:CreateCluster",
           "ecs:RegisterTaskDefinition",
@@ -85,6 +82,18 @@ resource "aws_iam_user_policy" "fastapi-terraform-policy" {
         ]
         Effect   = "Allow"
         Resource = "*"
+      },
+      {
+        Action = [
+          "s3:DeleteBucket",
+          "s3:DeleteObject",
+          "dynamodb:DeleteItem",
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "arn:aws:s3:::${var.AWS_RESOURCE_NAME_PREFIX}*",
+          aws_dynamodb_table.dynamodb-terraform-state-lock.arn
+        ]
       },
     ]
   })
