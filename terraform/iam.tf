@@ -89,7 +89,7 @@ resource "aws_iam_user_policy" "fastapi-terraform-policy" {
           "s3:DeleteObject",
           "dynamodb:DeleteItem",
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           "arn:aws:s3:::${var.AWS_RESOURCE_NAME_PREFIX}*",
           aws_dynamodb_table.dynamodb-terraform-state-lock.arn
